@@ -12,50 +12,46 @@ using namespace std;
 
 typedef long long ll;
 
-vector<bool> used(1e5 + 1, false);
-vector<vector<ll>> g(1e5 + 1);
+struct graph {
+    ll to, cost;
+};
 
-void dfs(ll s) {
-    used[s] = true;
-    for (int i = 0; i < g[s].size(); i++) {
-        ll to = g[s][i];
-        if (!used[to]) {
-            dfs(to);
-        }
-    }
-}
+vector<vector<graph>> g(1e5 + 1);
 
 int main() {
     ll n, m;
     cin >> n >> m;
-    for (int i = 0; i < n; i++) {
-        ll x, y;
-        cin >> x >> y;
+    for (int i = 0; i < m; i++) {
+        ll x, y , cost;
+        cin >> x >> y >> cost;
         x--; y--;
-        g[x].push_back(y);
-        g[y].push_back(x);
+        g[x].push_back({ y,cost });
+        g[y].push_back({ x,cost });
     }
-    ll s, t;
-    cin >> s >> t;
-    s--; t--;
-    queue<ll> q;
-    q.push(s);
-    vector<ll> d(n + 1, 1e9);
+    vector<ll> d(n + 1, 1e18);
     vector<bool> used(n + 1, false);
-    d[s] = 0;
-    used[s] = true;
-    while (!q.empty()) {
-        ll v = q.front();
-        q.pop();
-        for (int i = 0; i < g[v].size(); i++) {
-            ll to = g[v][i];
-            if (!used[to]) {
-                d[to] = d[v] + 1;
-                used[to] = true;
-                q.push(to);
+    set<pair<ll, ll>> s;
+    s.insert({ 0 , 0 });
+    d[0] = 0;
+    while (!s.empty()) {
+        auto itt = s.begin();
+        ll mn = 0, mni = 0;
+        mn = itt->first;
+        mni = itt->second;
+        s.erase(itt);
+        used[mni] = true;
+        for (int i = 0; i < g[mni].size(); i++) {
+            ll to = g[mni][i].to, cost = g[mni][i].cost;
+            if (d[to] > d[mni] + cost) {
+                d[to] = d[mni] + cost;
+                s.insert({ d[to] , to });
             }
         }
     }
-    cout << d[t] << endl;
+    if (d[n - 1] == 1e18) {
+        cout << -1 << endl;
+        return 0;
+    }
+    cout << d[n - 1] << endl;
     return 0;
 }
