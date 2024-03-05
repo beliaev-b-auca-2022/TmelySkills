@@ -12,46 +12,66 @@ using namespace std;
 
 typedef long long ll;
 
-struct graph {
-    ll to, cost;
-};
+vector<ll> sq;
+ll k = 0;
 
-vector<vector<graph>> g(1e5 + 1);
+void init(vector<ll>& a) {
+    ll n = a.size();
+    k = sqrt(n);
+    for (int i = 0; i < a.size(); i+=k) {
+        ll sum = 0;
+        for (int j = i; j < min( n ,i + k); j++) {
+            sum += a[j];
+        }
+        sq.push_back(sum);
+    }
+    return;
+}
+
+ll sum(vector<ll>& a, ll l , ll r) {
+    ll n = a.size();
+    ll sum = 0;
+    while (l % k != 0) {
+        sum += a[l];
+        l++;
+    }
+    while ((r + 1) % k != 0) {
+        sum += a[r];
+        r--;
+    }
+    for (int i = l; i <= r; i+= k) {
+        sum += sq[i / k];
+    }
+    return sum;
+}
+
+void update(vector<ll>& a, ll pos, ll x) {
+    ll n = a.size();
+    ll i = pos / k;
+    a[pos] = x;
+    ll sum = 0;
+    for (int j = pos; j < i + k; j++) {
+        sum += a[j];
+    }
+    sq[i] = sum;
+    return;
+}
 
 int main() {
-    ll n, m;
-    cin >> n >> m;
-    for (int i = 0; i < m; i++) {
-        ll x, y , cost;
-        cin >> x >> y >> cost;
-        x--; y--;
-        g[x].push_back({ y,cost });
-        g[y].push_back({ x,cost });
+    ll n;
+    cin >> n;
+    vector<ll> v(n);
+    for (int i = 0; i < n; i++) {
+        cin >> v[i];
     }
-    vector<ll> d(n + 1, 1e18);
-    vector<bool> used(n + 1, false);
-    set<pair<ll, ll>> s;
-    s.insert({ 0 , 0 });
-    d[0] = 0;
-    while (!s.empty()) {
-        auto itt = s.begin();
-        ll mn = 0, mni = 0;
-        mn = itt->first;
-        mni = itt->second;
-        s.erase(itt);
-        used[mni] = true;
-        for (int i = 0; i < g[mni].size(); i++) {
-            ll to = g[mni][i].to, cost = g[mni][i].cost;
-            if (d[to] > d[mni] + cost) {
-                d[to] = d[mni] + cost;
-                s.insert({ d[to] , to });
-            }
-        }
+    init(v);
+    ll q;
+    cin >> q;
+    while (q--) {
+        ll l, r;
+        cin >> l >> r;
+        l--; r--;
+        cout << sum(v, l, r) << endl;
     }
-    if (d[n - 1] == 1e18) {
-        cout << -1 << endl;
-        return 0;
-    }
-    cout << d[n - 1] << endl;
     return 0;
 }
